@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toddler Animal Slideshow</title>
+<style>
+body{font-family:sans-serif;margin:0;background:#f5f7fb}
+.container{padding:16px;max-width:900px;margin:auto}
+.header{background:#fff;padding:16px;border-radius:16px}
+.controls button{margin:6px;padding:10px;border-radius:10px;border:1px solid #ddd}
+.grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.grid button{padding:10px;border-radius:12px;border:1px solid #ddd}
+.stage{margin-top:16px;background:#fff;border-radius:16px;padding:20px;text-align:center}
+.big{font-size:60px}
+.title{font-size:28px;font-weight:bold}
+.caption{font-size:18px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<div class="title">Toddler Animal Slideshow</div>
+<div class="controls">
+<button onclick="togglePlay()">Play/Pause</button>
+</div>
+<div class="grid" id="grid"></div>
+</div>
+
+<div class="stage">
+<div class="big" id="emoji">🦩</div>
+<div class="title" id="name">Flamingo</div>
+<div class="caption" id="caption">Standing in water</div>
+</div>
+</div>
+
+<script>
+const animals = [
+{e:"🦩",n:"Flamingo",c:["Standing in water","Pink bird","Long legs"]},
+{e:"🦉",n:"Owl",c:["Big eyes","Night bird","Hoot"]},
+{e:"🐬",n:"Dolphin",c:["Swims fast","Friendly","Jumps"]},
+{e:"🐟",n:"Sea Horse",c:["Tiny","Curly tail","Underwater"]},
+{e:"🦒",n:"Giraffe",c:["Tall","Long neck","Spots"]},
+{e:"🐯",n:"Tiger",c:["Stripes","Big cat","Strong"]},
+{e:"🦚",n:"Peacock",c:["Colorful","Big tail","Feathers"]},
+{e:"🐱",n:"Kitty",c:["Meow","Soft","Cute"]},
+{e:"🐶",n:"Dog",c:["Woof","Playful","Friendly"]}
+];
+
+let idx=0;
+let slide=0;
+let playing=true;
+
+const grid=document.getElementById("grid");
+animals.forEach((a,i)=>{
+let b=document.createElement("button");
+b.innerText=a.e+" "+a.n;
+b.onclick=()=>{idx=i;slide=0;render()};
+grid.appendChild(b);
+});
+
+function render(){
+let a=animals[idx];
+document.getElementById("emoji").innerText=a.e;
+document.getElementById("name").innerText=a.n;
+document.getElementById("caption").innerText=a.c[slide%a.c.length];
+}
+
+function next(){
+slide++;
+render();
+}
+
+function togglePlay(){
+playing=!playing;
+}
+
+setInterval(()=>{
+if(playing) next();
+},2000);
+
+render();
+</script>
+</body>
+</html>
