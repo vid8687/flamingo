@@ -3,21 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Toddler Animal Slideshow</title>
+  <title>Toddler Animal Slideshow + Games</title>
   <style>
     :root{
       --bg:#f6f8fb; --card:#fff; --line:#e5e7eb; --text:#1f2937; --muted:#6b7280;
       --shadow:0 14px 40px rgba(15,23,42,.08); --radius:24px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#fff,#f6f8fb);color:var(--text)}
-    .app{max-width:1100px;margin:0 auto;padding:16px}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(180deg,#fff,#f6f8fb);
+      color:var(--text)
+    }
+    .app{max-width:1160px;margin:0 auto;padding:16px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
     .header{padding:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
-    h1{margin:0;font-size:clamp(28px,4vw,40px)}
-    .sub{margin-top:8px;color:var(--muted);font-size:17px}
-    .controls,.nav{display:flex;gap:10px;flex-wrap:wrap}
-    button{border:1px solid var(--line);background:#f8fafc;border-radius:18px;padding:12px 16px;font-size:16px;font-weight:700;cursor:pointer}
+    h1{margin:0;font-size:clamp(26px,4vw,40px)}
+    .sub{margin-top:8px;color:var(--muted);font-size:17px;line-height:1.4}
+    .controls,.nav,.tabs,.palette,.sound-grid{display:flex;gap:10px;flex-wrap:wrap}
+    button{
+      border:1px solid var(--line);background:#f8fafc;border-radius:18px;padding:12px 16px;
+      font-size:16px;font-weight:700;cursor:pointer;color:var(--text)
+    }
+    button.active{background:#111827;color:#fff;border-color:#111827}
     .layout{display:grid;grid-template-columns:300px 1fr;gap:16px;margin-top:16px}
     .sidebar{padding:16px}
     .sidebar h2{margin:0 0 12px 0;font-size:22px}
@@ -26,36 +35,70 @@
     .chip.active{background:#111827;color:#fff;border-color:#111827}
     .emoji{font-size:28px}
     .name{margin-top:8px;font-weight:700}
-    .coming{margin-top:14px;background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:14px}
-    .coming .tiny{font-size:12px;letter-spacing:.08em;font-weight:800;color:var(--muted);text-transform:uppercase}
-    .coming ul{margin:10px 0 0 18px;padding:0}
     .stage-wrap{padding:12px}
-    .stage{min-height:620px;border-radius:28px;padding:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fdf2f8,#fff7ed,#eff6ff)}
-    .stage-inner{width:min(860px,100%);display:flex;flex-direction:column;align-items:center;gap:16px}
+    .stage{
+      min-height:660px;border-radius:28px;padding:16px;display:flex;align-items:flex-start;
+      justify-content:center;background:linear-gradient(135deg,#fdf2f8,#fff7ed,#eff6ff)
+    }
+    .stage-inner{width:min(900px,100%);display:flex;flex-direction:column;align-items:center;gap:16px}
     .pill{background:rgba(255,255,255,.92);padding:10px 16px;border-radius:999px;font-weight:700;border:1px solid rgba(255,255,255,.7)}
-    .photo-wrap{width:100%;background:rgba(255,255,255,.78);border-radius:26px;padding:14px;border:1px solid rgba(255,255,255,.7);box-shadow:0 14px 30px rgba(15,23,42,.08)}
-    .photo-box{width:100%;aspect-ratio: 4 / 3;border-radius:20px;overflow:hidden;background:#eef2f7;position:relative}
+    .photo-wrap,.panel{
+      width:100%;background:rgba(255,255,255,.78);border-radius:26px;padding:14px;
+      border:1px solid rgba(255,255,255,.7);box-shadow:0 14px 30px rgba(15,23,42,.08)
+    }
+    .photo-box,.color-box,.draw-box{
+      width:100%;aspect-ratio:4/3;border-radius:20px;overflow:hidden;background:#eef2f7;position:relative
+    }
     .photo-box img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1);transition:transform 2s ease}
     .photo-box.animate img{transform:scale(1.04)}
-    .loading,.error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:#475569;font-weight:600}
-    .label{max-width:760px;text-align:center;background:rgba(255,255,255,.88);padding:18px 22px;border-radius:24px;border:1px solid rgba(255,255,255,.7)}
-    .label h3{margin:0;font-size:clamp(34px,4vw,44px)}
+    .loading,.error,.center-note{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      padding:20px;text-align:center;color:#475569;font-weight:600
+    }
+    .label{
+      max-width:780px;text-align:center;background:rgba(255,255,255,.9);
+      padding:18px 22px;border-radius:24px;border:1px solid rgba(255,255,255,.7)
+    }
+    .label h3{margin:0;font-size:clamp(32px,4vw,44px)}
     .caption{margin-top:8px;font-size:22px;color:#374151}
     .facts{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .fact{background:#111827;color:#fff;border-radius:999px;padding:8px 12px;font-size:14px;font-weight:700}
-    .credit{max-width:860px;font-size:12px;line-height:1.4;color:#475569;background:#f8fafc;border:1px solid var(--line);border-radius:16px;padding:12px}
-    .note{margin-top:12px;text-align:center;color:var(--muted);font-size:14px}
+    .credit,.note,.mini{max-width:860px;font-size:13px;line-height:1.45;color:#475569}
+    .credit{background:#f8fafc;border:1px solid var(--line);border-radius:16px;padding:12px}
+    .note{margin-top:12px;text-align:center}
     a{color:#0f766e;text-decoration:none}
-    @media (max-width:900px){.layout{grid-template-columns:1fr}.stage{min-height:540px}}
-    @media (max-width:640px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.chip{padding:12px}.caption{font-size:18px}.stage{min-height:500px}}
+    .hidden{display:none !important}
+
+    .palette button{
+      width:42px;height:42px;border-radius:999px;padding:0;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.08)
+    }
+    .palette button.selected{outline:3px solid #111827}
+    #drawCanvas,#colorCanvas{touch-action:none;background:#fff}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center}
+    .sound-grid button{min-width:120px}
+    .match-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+    .match-card{
+      padding:18px;border-radius:18px;background:#fff;border:1px solid var(--line);text-align:center;
+      font-size:20px;font-weight:700;min-height:92px
+    }
+    .match-card.done{background:#ecfdf5;border-color:#86efac}
+    .score{font-size:18px;font-weight:800}
+    @media (max-width:900px){.layout{grid-template-columns:1fr}.stage{min-height:560px}}
+    @media (max-width:640px){
+      .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .chip{padding:12px}
+      .caption{font-size:18px}
+      .match-grid{grid-template-columns:1fr}
+      .stage{min-height:520px}
+    }
   </style>
 </head>
 <body>
 <div class="app">
   <section class="card header">
     <div>
-      <h1>Toddler Animal Slideshow</h1>
-      <div class="sub">Hosted photo version. Tap an animal, then use Next or let it auto-play.</div>
+      <h1>Toddler Animal Slideshow + Games</h1>
+      <div class="sub">Now includes slideshow, draw your animal, color pages, animal sounds, and baby-parent matching.</div>
     </div>
     <div class="controls">
       <button id="playBtn">Pause</button>
@@ -68,29 +111,70 @@
     <aside class="card sidebar">
       <h2>Choose an animal</h2>
       <div class="grid" id="animalGrid"></div>
-      <div class="coming">
-        <div class="tiny">Later ideas</div>
-        <ul>
-          <li>Draw your animal</li>
-          <li>Tap-to-color pages</li>
-          <li>Animal sounds</li>
-          <li>Match baby and parent animals</li>
-        </ul>
-      </div>
     </aside>
 
     <main class="card stage-wrap">
+      <div class="tabs" id="tabs">
+        <button class="active" data-mode="slideshow">Slideshow</button>
+        <button data-mode="draw">Draw</button>
+        <button data-mode="color">Color</button>
+        <button data-mode="sounds">Sounds</button>
+        <button data-mode="match">Match</button>
+      </div>
+
       <div class="stage" id="stage">
         <div class="stage-inner">
           <div class="pill" id="counter">Slide 1 of 3</div>
 
-          <div class="photo-wrap">
+          <section id="mode-slideshow" class="mode-section panel">
             <div class="photo-box" id="photoBox">
               <div class="loading" id="loading">Loading image…</div>
               <img id="photo" alt="" />
-              <div class="error" id="error" style="display:none;">This image did not load. Try Next or reload the page.</div>
+              <div class="error hidden" id="error">This image did not load. Try Next or reload the page.</div>
             </div>
-          </div>
+          </section>
+
+          <section id="mode-draw" class="mode-section panel hidden">
+            <div class="draw-box">
+              <canvas id="drawCanvas" width="900" height="675"></canvas>
+            </div>
+            <div class="row">
+              <div class="palette" id="drawPalette"></div>
+              <button id="drawClearBtn">Clear</button>
+            </div>
+            <div class="mini">Draw on top of the animal guide. This works best in a real browser tab, not a file preview.</div>
+          </section>
+
+          <section id="mode-color" class="mode-section panel hidden">
+            <div class="color-box">
+              <canvas id="colorCanvas" width="900" height="675"></canvas>
+            </div>
+            <div class="row">
+              <div class="palette" id="colorPalette"></div>
+              <button id="colorResetBtn">Reset</button>
+            </div>
+            <div class="mini">Tap colored circles, then tap the animal parts to fill them.</div>
+          </section>
+
+          <section id="mode-sounds" class="mode-section panel hidden">
+            <div class="label" style="max-width:none">
+              <h3 id="soundTitle">Animal Sounds</h3>
+              <div class="caption">Tap a sound button.</div>
+              <div class="sound-grid" id="soundGrid" style="justify-content:center;margin-top:16px"></div>
+            </div>
+          </section>
+
+          <section id="mode-match" class="mode-section panel hidden">
+            <div class="label" style="max-width:none">
+              <h3>Match Baby and Parent</h3>
+              <div class="caption">Tap one parent card and one baby card.</div>
+              <div class="score" id="matchScore" style="margin-top:12px">0 / 5 matches</div>
+            </div>
+            <div class="match-grid" id="matchGrid" style="margin-top:12px"></div>
+            <div class="row" style="margin-top:12px">
+              <button id="resetMatchBtn">New Match Game</button>
+            </div>
+          </section>
 
           <div class="label" id="label">
             <h3 id="title">Flamingo</h3>
@@ -106,7 +190,7 @@
           <div class="credit" id="credit"></div>
         </div>
       </div>
-      <div class="note">This version uses hosted Wikimedia Commons images, so it needs internet access.</div>
+      <div class="note">Hosted-photo version. It needs internet for the slideshow images.</div>
     </main>
   </section>
 </div>
@@ -115,52 +199,52 @@
 const animals = [
   {
     id:"flamingo", name:"Flamingo", emoji:"🦩", bg:"linear-gradient(135deg,#ffe7f0,#fff1f2,#fff7ed)",
-    facts:["Pink bird","Long legs","Stands in water"],
+    facts:["Pink bird","Long legs","Stands in water"], soundLabel:"Squawk",
     slides:[
-      {caption:"Pretty pink flamingo.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Flamingos_.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Flamingos_.jpg">File:Flamingos_.jpg</a> — CC BY-SA 3.0'},
-      {caption:"Tall flamingo standing quietly.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Flamingo_(42598362).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Flamingo_(42598362).jpg">File:Flamingo (42598362).jpg</a> — CC BY 3.0'},
-      {caption:"Another flamingo look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/431%20American%20Flamingo.jpg", credit:'Artwork: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:431_American_Flamingo.jpg">File:431 American Flamingo.jpg</a>'}
+      {caption:"Pretty pink flamingo.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Flamingos_.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Flamingos_.jpg">Flamingos_.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Tall flamingo standing quietly.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Flamingo_(42598362).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Flamingo_(42598362).jpg">Flamingo (42598362).jpg</a> — CC BY 3.0'},
+      {caption:"Another flamingo look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/431%20American%20Flamingo.jpg", credit:'Artwork: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:431_American_Flamingo.jpg">431 American Flamingo.jpg</a>'}
     ]
   },
   {
     id:"owl", name:"Owl", emoji:"🦉", bg:"linear-gradient(135deg,#fff4d7,#fffbeb,#fff7ed)",
-    facts:["Big eyes","Soft feathers","Hoot hoot"],
+    facts:["Big eyes","Soft feathers","Hoot hoot"], soundLabel:"Hoot",
     slides:[
-      {caption:"Wide-eyed owl.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/OWl.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:OWl.jpg">File:OWl.jpg</a>'},
-      {caption:"Burrowing owl looking curious.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Burrowing%20Owl%204354.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Burrowing_Owl_4354.jpg">File:Burrowing Owl 4354.jpg</a>'},
-      {caption:"Owl resting calmly.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/OWl.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:OWl.jpg">File:OWl.jpg</a>'}
+      {caption:"Wide-eyed owl.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/OWl.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:OWl.jpg">OWl.jpg</a>'},
+      {caption:"Burrowing owl looking curious.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Burrowing%20Owl%204354.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Burrowing_Owl_4354.jpg">Burrowing Owl 4354.jpg</a>'},
+      {caption:"Owl resting calmly.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/OWl.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:OWl.jpg">OWl.jpg</a>'}
     ]
   },
   {
     id:"dolphin", name:"Dolphin", emoji:"🐬", bg:"linear-gradient(135deg,#e0f7ff,#ecfeff,#eff6ff)",
-    facts:["Swims fast","Loves the sea","Clicks and whistles"],
+    facts:["Swims fast","Loves the sea","Clicks and whistles"], soundLabel:"Click click",
     slides:[
-      {caption:"Happy dolphins in the sea.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dolphins%20300.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dolphins_300.jpg">File:Dolphins 300.jpg</a>'},
-      {caption:"Bottlenose dolphin with young.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Bottlenose%20dolphin%20with%20young.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Bottlenose_dolphin_with_young.JPG">File:Bottlenose dolphin with young.JPG</a>'},
-      {caption:"Common dolphin look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Common%20dolphin%20noaa.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Common_dolphin_noaa.jpg">File:Common dolphin noaa.jpg</a>'}
+      {caption:"Happy dolphins in the sea.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dolphins%20300.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dolphins_300.jpg">Dolphins 300.jpg</a>'},
+      {caption:"Bottlenose dolphin with young.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Bottlenose%20dolphin%20with%20young.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Bottlenose_dolphin_with_young.JPG">Bottlenose dolphin with young.JPG</a>'},
+      {caption:"Common dolphin look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Common%20dolphin%20noaa.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Common_dolphin_noaa.jpg">Common dolphin noaa.jpg</a>'}
     ]
   },
   {
     id:"seahorse", name:"Sea Horse", emoji:"🌊", bg:"linear-gradient(135deg,#ddfbff,#ecfeff,#f0fdfa)",
-    facts:["Tiny swimmer","Curly tail","Lives underwater"],
+    facts:["Tiny swimmer","Curly tail","Lives underwater"], soundLabel:"Bubble pop",
     slides:[
-      {caption:"Small sea horse underwater.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Seahorse%20(1).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Seahorse_(1).jpg">File:Seahorse (1).jpg</a> — CC BY-SA 3.0'},
-      {caption:"Curly-tailed sea horse.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Sea%20Horse%20(4564152689).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Sea_Horse_(4564152689).jpg">File:Sea Horse (4564152689).jpg</a> — CC BY 2.0'},
-      {caption:"Another sea horse view.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Seahorse%20(9052915447).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Seahorse_(9052915447).jpg">File:Seahorse (9052915447).jpg</a> — CC BY 2.0'}
+      {caption:"Small sea horse underwater.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Seahorse%20(1).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Seahorse_(1).jpg">Seahorse (1).jpg</a> — CC BY-SA 3.0'},
+      {caption:"Curly-tailed sea horse.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Sea%20Horse%20(4564152689).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Sea_Horse_(4564152689).jpg">Sea Horse (4564152689).jpg</a> — CC BY 2.0'},
+      {caption:"Another sea horse view.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Seahorse%20(9052915447).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Seahorse_(9052915447).jpg">Seahorse (9052915447).jpg</a> — CC BY 2.0'}
     ]
   },
   {
     id:"giraffe", name:"Giraffe", emoji:"🦒", bg:"linear-gradient(135deg,#fff7d4,#fffbeb,#fff7ed)",
-    facts:["Very tall","Long neck","Spotty body"],
+    facts:["Very tall","Long neck","Spotty body"], soundLabel:"Hum",
     slides:[
-      {caption:"Tall giraffe.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Giraffe.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Giraffe.JPG">File:Giraffe.JPG</a>'},
-      {caption:"Full-length giraffe.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/GIRAFFE%20FULL%20LENGTH.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:GIRAFFE_FULL_LENGTH.jpg">File:GIRAFFE FULL LENGTH.jpg</a>'},
-      {caption:"Giraffe looking around.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Giraffe.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Giraffe.JPG">File:Giraffe.JPG</a>'}
+      {caption:"Tall giraffe.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Giraffe.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Giraffe.JPG">Giraffe.JPG</a>'},
+      {caption:"Full-length giraffe.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/GIRAFFE%20FULL%20LENGTH.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:GIRAFFE_FULL_LENGTH.jpg">GIRAFFE FULL LENGTH.jpg</a>'},
+      {caption:"Giraffe looking around.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Giraffe.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Giraffe.JPG">Giraffe.JPG</a>'}
     ]
   },
   {
     id:"tiger", name:"Tiger", emoji:"🐯", bg:"linear-gradient(135deg,#fff1da,#fff7ed,#fefce8)",
-    facts:["Orange stripes","Big cat","Strong paws"],
+    facts:["Orange stripes","Big cat","Strong paws"], soundLabel:"Roar",
     slides:[
       {caption:"Calm tiger.", image:"https://upload.wikimedia.org/wikipedia/commons/5/56/Tiger.50.jpg", credit:'Photo: Wikimedia Commons tiger image'},
       {caption:"Tiger face close-up.", image:"https://upload.wikimedia.org/wikipedia/commons/2/2d/Tigerramki.jpg", credit:'Photo: Wikimedia Commons tiger image'},
@@ -169,31 +253,36 @@ const animals = [
   },
   {
     id:"peacock", name:"Peacock", emoji:"🦚", bg:"linear-gradient(135deg,#e8fff8,#f0fdfa,#ecfeff)",
-    facts:["Fancy feathers","Bright colors","Big tail"],
+    facts:["Fancy feathers","Bright colors","Big tail"], soundLabel:"Call",
     slides:[
-      {caption:"Colorful peacock.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock.JPG">File:Peacock.JPG</a>'},
-      {caption:"Peacock profile.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock%20profile.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock_profile.jpg">File:Peacock profile.jpg</a> — CC BY-SA 4.0'},
-      {caption:"Peacock again.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock%20(6964635758).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock_(6964635758).jpg">File:Peacock (6964635758).jpg</a> — CC BY 2.0'}
+      {caption:"Colorful peacock.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock.JPG">Peacock.JPG</a>'},
+      {caption:"Peacock profile.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock%20profile.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock_profile.jpg">Peacock profile.jpg</a> — CC BY-SA 4.0'},
+      {caption:"Peacock again.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock%20(6964635758).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock_(6964635758).jpg">Peacock (6964635758).jpg</a> — CC BY 2.0'}
     ]
   },
   {
     id:"kitty", name:"Kitty", emoji:"🐱", bg:"linear-gradient(135deg,#ffeaf2,#fdf2f8,#fdf4ff)",
-    facts:["Soft paws","Meow meow","Loves naps"],
+    facts:["Soft paws","Meow meow","Loves naps"], soundLabel:"Meow",
     slides:[
-      {caption:"Sweet kitty.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/A-Cat.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:A-Cat.jpg">File:A-Cat.jpg</a> — CC BY-SA 3.0'},
-      {caption:"Another calm cat.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/A%20Cat.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:A_Cat.jpg">File:A Cat.jpg</a> — CC BY-SA 4.0'},
-      {caption:"Kitty in the snow.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Felis%20catus-cat%20on%20snow.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Felis_catus-cat_on_snow.jpg">File:Felis catus-cat on snow.jpg</a>'}
+      {caption:"Sweet kitty.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/A-Cat.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:A-Cat.jpg">A-Cat.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Another calm cat.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/A%20Cat.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:A_Cat.jpg">A Cat.jpg</a> — CC BY-SA 4.0'},
+      {caption:"Kitty in the snow.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Felis%20catus-cat%20on%20snow.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Felis_catus-cat_on_snow.jpg">Felis catus-cat on snow.jpg</a>'}
     ]
   },
   {
     id:"dog", name:"Dog", emoji:"🐶", bg:"linear-gradient(135deg,#efffeb,#f0fdf4,#ecfdf5)",
-    facts:["Waggy tail","Woof woof","Loves to play"],
+    facts:["Waggy tail","Woof woof","Loves to play"], soundLabel:"Woof",
     slides:[
-      {caption:"Friendly dog.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dogs.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dogs.jpg">File:Dogs.jpg</a> — CC BY-SA 3.0'},
-      {caption:"Another sweet dog.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/My%20dog.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:My_dog.jpg">File:My dog.jpg</a> — CC BY-SA 3.0'},
-      {caption:"Cute pup look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dog-2016-11-a.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dog-2016-11-a.jpg">File:Dog-2016-11-a.jpg</a> — CC BY-SA 3.0'}
+      {caption:"Friendly dog.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dogs.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dogs.jpg">Dogs.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Another sweet dog.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/My%20dog.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:My_dog.jpg">My dog.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Cute pup look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dog-2016-11-a.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dog-2016-11-a.jpg">Dog-2016-11-a.jpg</a> — CC BY-SA 3.0'}
     ]
   }
+];
+
+const matchPairs = [
+  ["Dog","Puppy"],["Kitty","Kitten"],["Tiger","Cub"],["Giraffe","Calf"],["Dolphin","Calf"],
+  ["Owl","Owlet"],["Flamingo","Chick"],["Peacock","Peachick"],["Sea Horse","Baby Sea Horse"]
 ];
 
 let selectedAnimalId = "flamingo";
@@ -201,6 +290,11 @@ let slideIndex = 0;
 let isPlaying = true;
 let showWords = true;
 let timer = null;
+let mode = "slideshow";
+let drawColor = "#ff4d6d";
+let colorFill = "#ffb703";
+let colorRegions = [];
+let matchState = {};
 
 const animalGrid = document.getElementById("animalGrid");
 const stage = document.getElementById("stage");
@@ -216,6 +310,10 @@ const counterEl = document.getElementById("counter");
 const creditEl = document.getElementById("credit");
 const playBtn = document.getElementById("playBtn");
 const wordsBtn = document.getElementById("wordsBtn");
+const drawCanvas = document.getElementById("drawCanvas");
+const drawCtx = drawCanvas.getContext("2d");
+const colorCanvas = document.getElementById("colorCanvas");
+const colorCtx = colorCanvas.getContext("2d");
 
 function currentAnimal(){ return animals.find(a => a.id === selectedAnimalId) || animals[0]; }
 
@@ -228,9 +326,8 @@ function renderButtons(){
     btn.addEventListener("click", () => {
       selectedAnimalId = animal.id;
       slideIndex = 0;
-      renderButtons();
-      render();
-      restartTimer();
+      renderButtons(); render(); restartTimer();
+      initDrawCanvas(); initColorCanvas(); renderSoundGrid();
     });
     animalGrid.appendChild(btn);
   });
@@ -250,7 +347,7 @@ function render(){
   const animal = currentAnimal();
   const slide = animal.slides[slideIndex];
   stage.style.background = animal.bg;
-  counterEl.textContent = `Slide ${slideIndex + 1} of ${animal.slides.length}`;
+  counterEl.textContent = mode === "slideshow" ? `Slide ${slideIndex + 1} of ${animal.slides.length}` : animal.name;
   titleEl.textContent = animal.name;
   captionEl.textContent = slide.caption;
   renderFacts(animal.facts);
@@ -258,20 +355,21 @@ function render(){
   playBtn.textContent = isPlaying ? "Pause" : "Play";
   wordsBtn.textContent = showWords ? "Hide words" : "Show words";
   creditEl.innerHTML = slide.credit + " · Keep this credit if you publish the app.";
+
   loading.style.display = "flex";
-  errorEl.style.display = "none";
+  errorEl.classList.add("hidden");
   photo.style.display = "none";
   photo.alt = animal.name;
   photoBox.classList.remove("animate");
   photo.onload = () => {
     loading.style.display = "none";
-    errorEl.style.display = "none";
+    errorEl.classList.add("hidden");
     photo.style.display = "block";
     requestAnimationFrame(() => photoBox.classList.add("animate"));
   };
   photo.onerror = () => {
     loading.style.display = "none";
-    errorEl.style.display = "flex";
+    errorEl.classList.remove("hidden");
     photo.style.display = "none";
   };
   photo.src = slide.image;
@@ -289,7 +387,7 @@ function prevSlide(){
 }
 function restartTimer(){
   if (timer) clearInterval(timer);
-  if (isPlaying) timer = setInterval(nextSlide, 2600);
+  if (isPlaying && mode === "slideshow") timer = setInterval(nextSlide, 2600);
 }
 
 document.getElementById("prevBtn").addEventListener("click", () => { prevSlide(); restartTimer(); });
@@ -308,9 +406,325 @@ document.addEventListener("keydown", e => {
   else if (e.key === " ") { e.preventDefault(); isPlaying = !isPlaying; render(); restartTimer(); }
 });
 
+document.querySelectorAll("#tabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b === btn));
+    document.querySelectorAll(".mode-section").forEach(s => s.classList.add("hidden"));
+    document.getElementById("mode-"+mode).classList.remove("hidden");
+    restartTimer();
+    if (mode === "draw") initDrawCanvas();
+    if (mode === "color") initColorCanvas();
+    if (mode === "sounds") renderSoundGrid();
+    if (mode === "match") initMatchGame();
+    render();
+  });
+});
+
+function getPaletteColors(){
+  return ["#ff4d6d","#ffb703","#2a9d8f","#4d96ff","#9b5de5","#111827","#ffffff"];
+}
+function buildPalette(el, onPick, current){
+  el.innerHTML = "";
+  getPaletteColors().forEach(c => {
+    const b = document.createElement("button");
+    b.style.background = c;
+    b.className = current === c ? "selected" : "";
+    b.addEventListener("click", () => {
+      onPick(c);
+      buildPalette(el, onPick, c);
+    });
+    el.appendChild(b);
+  });
+}
+buildPalette(document.getElementById("drawPalette"), c => drawColor = c, drawColor);
+buildPalette(document.getElementById("colorPalette"), c => colorFill = c, colorFill);
+
+function canvasPos(canvas, e){
+  const rect = canvas.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return {
+    x:(p.clientX - rect.left) * canvas.width / rect.width,
+    y:(p.clientY - rect.top) * canvas.height / rect.height
+  };
+}
+
+/* DRAW MODE */
+let drawing = false;
+function initDrawCanvas(){
+  drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  drawCtx.fillStyle = "#fff";
+  drawCtx.fillRect(0,0,drawCanvas.width,drawCanvas.height);
+  drawCtx.lineJoin = "round";
+  drawCtx.lineCap = "round";
+  drawGuide(drawCtx, currentAnimal().id, "#d1d5db", 8);
+}
+function drawGuide(ctx, id, stroke, width){
+  ctx.save();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = width;
+  ctx.fillStyle = "transparent";
+  if(id === "giraffe"){
+    ctx.beginPath(); ctx.ellipse(460,220,110,120,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(390,300,120,220,50); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(420,90); ctx.lineTo(435,30); ctx.moveTo(500,90); ctx.lineTo(485,30); ctx.stroke();
+  } else if(id === "kitty" || id === "dog" || id === "tiger"){
+    ctx.beginPath(); ctx.ellipse(450,220,120,120,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(450,430,160,130,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(355,150); ctx.lineTo(320,80); ctx.lineTo(390,120); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(545,150); ctx.lineTo(580,80); ctx.lineTo(510,120); ctx.stroke();
+  } else if(id === "flamingo"){
+    ctx.beginPath(); ctx.ellipse(470,300,100,140,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(520,180); ctx.bezierCurveTo(650,100,650,40,560,60); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(440,430); ctx.lineTo(430,640); ctx.moveTo(500,430); ctx.lineTo(510,640); ctx.stroke();
+  } else if(id === "owl"){
+    ctx.beginPath(); ctx.ellipse(450,300,120,150,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(400,280,42,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(500,280,42,0,Math.PI*2); ctx.stroke();
+  } else if(id === "dolphin"){
+    ctx.beginPath(); ctx.moveTo(180,350); ctx.quadraticCurveTo(350,120,650,270); ctx.quadraticCurveTo(520,340,260,360); ctx.closePath(); ctx.stroke();
+  } else if(id === "seahorse"){
+    ctx.beginPath(); ctx.moveTo(450,140); ctx.bezierCurveTo(560,160,560,280,490,340); ctx.bezierCurveTo(410,410,460,520,520,520); ctx.stroke();
+  } else if(id === "peacock"){
+    ctx.beginPath(); ctx.ellipse(450,360,90,120,0,0,Math.PI*2); ctx.stroke();
+    for(let i=0;i<7;i++){ const x=450+(i-3)*55; ctx.beginPath(); ctx.moveTo(450,330); ctx.quadraticCurveTo(x,170,x,70); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+function startDraw(e){
+  drawing = true;
+  const p = canvasPos(drawCanvas, e);
+  drawCtx.beginPath();
+  drawCtx.moveTo(p.x,p.y);
+}
+function moveDraw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const p = canvasPos(drawCanvas, e);
+  drawCtx.strokeStyle = drawColor;
+  drawCtx.lineWidth = 12;
+  drawCtx.lineTo(p.x,p.y);
+  drawCtx.stroke();
+}
+function endDraw(){ drawing = false; }
+drawCanvas.addEventListener("mousedown",startDraw);
+drawCanvas.addEventListener("mousemove",moveDraw);
+window.addEventListener("mouseup",endDraw);
+drawCanvas.addEventListener("touchstart",startDraw,{passive:false});
+drawCanvas.addEventListener("touchmove",moveDraw,{passive:false});
+window.addEventListener("touchend",endDraw);
+document.getElementById("drawClearBtn").addEventListener("click", initDrawCanvas);
+
+/* COLOR MODE */
+function initColorCanvas(){
+  colorCtx.clearRect(0,0,colorCanvas.width,colorCanvas.height);
+  colorCtx.fillStyle="#fff";
+  colorCtx.fillRect(0,0,colorCanvas.width,colorCanvas.height);
+  colorRegions = buildColorRegions(currentAnimal().id);
+  drawColorRegions();
+}
+function buildColorRegions(id){
+  const regs = [];
+  if(id === "giraffe"){
+    regs.push({type:"ellipse",x:460,y:220,rx:110,ry:120,color:"#fde68a",stroke:"#111827"});
+    regs.push({type:"rect",x:390,y:300,w:120,h:220,r:50,color:"#fde68a",stroke:"#111827"});
+    regs.push({type:"circle",x:420,y:385,r:22,color:"#d97706",stroke:"#111827"});
+    regs.push({type:"circle",x:500,y:450,r:18,color:"#d97706",stroke:"#111827"});
+  } else if(id === "kitty"){
+    regs.push({type:"ellipse",x:450,y:220,rx:120,ry:120,color:"#fed7aa",stroke:"#111827"});
+    regs.push({type:"ellipse",x:450,y:430,rx:160,ry:130,color:"#fed7aa",stroke:"#111827"});
+    regs.push({type:"poly",pts:[[355,150],[320,80],[390,120]],color:"#fbcfe8",stroke:"#111827"});
+    regs.push({type:"poly",pts:[[545,150],[580,80],[510,120]],color:"#fbcfe8",stroke:"#111827"});
+  } else if(id === "dog"){
+    regs.push({type:"ellipse",x:450,y:220,rx:120,ry:120,color:"#fdba74",stroke:"#111827"});
+    regs.push({type:"ellipse",x:450,y:430,rx:160,ry:130,color:"#fdba74",stroke:"#111827"});
+    regs.push({type:"ellipse",x:350,y:170,rx:35,ry:80,rot:-0.4,color:"#92400e",stroke:"#111827"});
+    regs.push({type:"ellipse",x:550,y:170,rx:35,ry:80,rot:0.4,color:"#92400e",stroke:"#111827"});
+  } else if(id === "tiger"){
+    regs.push({type:"ellipse",x:450,y:220,rx:120,ry:120,color:"#fb923c",stroke:"#111827"});
+    regs.push({type:"ellipse",x:450,y:430,rx:160,ry:130,color:"#fb923c",stroke:"#111827"});
+    regs.push({type:"rect",x:360,y:170,w:20,h:140,r:8,color:"#111827",stroke:"#111827"});
+    regs.push({type:"rect",x:520,y:170,w:20,h:140,r:8,color:"#111827",stroke:"#111827"});
+  } else if(id === "flamingo"){
+    regs.push({type:"ellipse",x:470,y:300,rx:100,ry:140,color:"#f9a8d4",stroke:"#111827"});
+    regs.push({type:"circle",x:560,y:65,r:35,color:"#f9a8d4",stroke:"#111827"});
+    regs.push({type:"poly",pts:[[585,78],[640,90],[590,110]],color:"#111827",stroke:"#111827"});
+  } else if(id === "owl"){
+    regs.push({type:"ellipse",x:450,y:300,rx:120,ry:150,color:"#c4a484",stroke:"#111827"});
+    regs.push({type:"circle",x:400,y:280,r:42,color:"#fff",stroke:"#111827"});
+    regs.push({type:"circle",x:500,y:280,r:42,color:"#fff",stroke:"#111827"});
+    regs.push({type:"poly",pts:[[440,330],[460,330],[450,360]],color:"#f59e0b",stroke:"#111827"});
+  } else if(id === "dolphin"){
+    regs.push({type:"poly",pts:[[180,350],[350,120],[650,270],[520,340],[260,360]],color:"#93c5fd",stroke:"#111827"});
+  } else if(id === "seahorse"){
+    regs.push({type:"poly",pts:[[450,140],[520,170],[545,240],[525,310],[480,360],[450,430],[500,520],[430,560],[380,500],[400,420],[450,140]],color:"#fdba74",stroke:"#111827"});
+  } else if(id === "peacock"){
+    regs.push({type:"ellipse",x:450,y:360,rx:90,ry:120,color:"#38bdf8",stroke:"#111827"});
+    for(let i=0;i<7;i++) regs.push({type:"ellipse",x:450+(i-3)*55,y:90,rx:38,ry:58,color:"#4ade80",stroke:"#111827"});
+  } else {
+    regs.push({type:"ellipse",x:450,y:300,rx:120,ry:120,color:"#e5e7eb",stroke:"#111827"});
+  }
+  return regs;
+}
+function drawColorRegions(){
+  colorCtx.clearRect(0,0,colorCanvas.width,colorCanvas.height);
+  colorCtx.fillStyle="#fff";
+  colorCtx.fillRect(0,0,colorCanvas.width,colorCanvas.height);
+  colorRegions.forEach(r => drawRegion(r));
+}
+function drawRegion(r){
+  colorCtx.save();
+  colorCtx.fillStyle = r.color;
+  colorCtx.strokeStyle = r.stroke || "#111827";
+  colorCtx.lineWidth = 4;
+  if(r.type==="ellipse"){
+    colorCtx.beginPath();
+    colorCtx.ellipse(r.x,r.y,r.rx,r.ry,r.rot||0,0,Math.PI*2);
+    colorCtx.fill(); colorCtx.stroke();
+  } else if(r.type==="rect"){
+    colorCtx.beginPath();
+    colorCtx.roundRect(r.x,r.y,r.w,r.h,r.r||0);
+    colorCtx.fill(); colorCtx.stroke();
+  } else if(r.type==="circle"){
+    colorCtx.beginPath();
+    colorCtx.arc(r.x,r.y,r.r,0,Math.PI*2);
+    colorCtx.fill(); colorCtx.stroke();
+  } else if(r.type==="poly"){
+    colorCtx.beginPath();
+    colorCtx.moveTo(r.pts[0][0],r.pts[0][1]);
+    for(let i=1;i<r.pts.length;i++) colorCtx.lineTo(r.pts[i][0],r.pts[i][1]);
+    colorCtx.closePath();
+    colorCtx.fill(); colorCtx.stroke();
+  }
+  colorCtx.restore();
+}
+function hitRegion(x,y,r){
+  colorCtx.save();
+  colorCtx.beginPath();
+  if(r.type==="ellipse") colorCtx.ellipse(r.x,r.y,r.rx,r.ry,r.rot||0,0,Math.PI*2);
+  else if(r.type==="rect") colorCtx.roundRect(r.x,r.y,r.w,r.h,r.r||0);
+  else if(r.type==="circle") colorCtx.arc(r.x,r.y,r.r,0,Math.PI*2);
+  else if(r.type==="poly"){ colorCtx.moveTo(r.pts[0][0],r.pts[0][1]); for(let i=1;i<r.pts.length;i++) colorCtx.lineTo(r.pts[i][0],r.pts[i][1]); colorCtx.closePath(); }
+  const hit = colorCtx.isPointInPath(x,y);
+  colorCtx.restore();
+  return hit;
+}
+colorCanvas.addEventListener("click", e => {
+  const p = canvasPos(colorCanvas,e);
+  for(let i=colorRegions.length-1;i>=0;i--){
+    if(hitRegion(p.x,p.y,colorRegions[i])){
+      colorRegions[i].color = colorFill;
+      drawColorRegions();
+      break;
+    }
+  }
+});
+document.getElementById("colorResetBtn").addEventListener("click", initColorCanvas);
+
+/* SOUND MODE */
+function soundTone(freq, duration, type="sine"){
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.value = 0.001;
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start();
+  const now = ctx.currentTime;
+  gain.gain.exponentialRampToValueAtTime(0.15, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.stop(now + duration);
+}
+function playAnimalSound(id){
+  if(id==="owl"){ soundTone(420,0.22,"triangle"); setTimeout(()=>soundTone(320,0.28,"triangle"),180); }
+  else if(id==="dog"){ soundTone(220,0.15,"square"); setTimeout(()=>soundTone(170,0.18,"square"),120); }
+  else if(id==="kitty"){ soundTone(660,0.12,"triangle"); setTimeout(()=>soundTone(540,0.18,"triangle"),120); }
+  else if(id==="tiger"){ soundTone(140,0.35,"sawtooth"); setTimeout(()=>soundTone(110,0.45,"sawtooth"),140); }
+  else if(id==="dolphin"){ soundTone(900,0.12,"sine"); setTimeout(()=>soundTone(1200,0.1,"sine"),120); setTimeout(()=>soundTone(1000,0.12,"sine"),220); }
+  else if(id==="flamingo"){ soundTone(700,0.08,"square"); setTimeout(()=>soundTone(760,0.08,"square"),90); }
+  else if(id==="peacock"){ soundTone(500,0.18,"sawtooth"); setTimeout(()=>soundTone(700,0.25,"sawtooth"),140); }
+  else if(id==="giraffe"){ soundTone(280,0.15,"sine"); setTimeout(()=>soundTone(300,0.16,"sine"),160); }
+  else if(id==="seahorse"){ soundTone(820,0.05,"sine"); setTimeout(()=>soundTone(900,0.05,"sine"),80); setTimeout(()=>soundTone(980,0.05,"sine"),150); }
+}
+function renderSoundGrid(){
+  const grid = document.getElementById("soundGrid");
+  grid.innerHTML = "";
+  animals.forEach(a => {
+    const b = document.createElement("button");
+    b.textContent = a.emoji + " " + a.soundLabel;
+    b.addEventListener("click", () => playAnimalSound(a.id));
+    grid.appendChild(b);
+  });
+}
+
+/* MATCH MODE */
+function shuffle(arr){
+  return arr.map(v => [Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]);
+}
+function initMatchGame(){
+  const chosen = shuffle(matchPairs).slice(0,5);
+  matchState = {pairs: chosen, first: null, done: new Set()};
+  const cards = [];
+  chosen.forEach(([parent,baby], idx) => {
+    cards.push({type:"parent", pair: idx, text: parent});
+    cards.push({type:"baby", pair: idx, text: baby});
+  });
+  renderMatchGrid(shuffle(cards));
+}
+function renderMatchGrid(cards){
+  const grid = document.getElementById("matchGrid");
+  grid.innerHTML = "";
+  cards.forEach((card, i) => {
+    const el = document.createElement("button");
+    el.className = "match-card";
+    el.textContent = card.text;
+    el.disabled = matchState.done.has(card.pair);
+    if(matchState.done.has(card.pair)) el.classList.add("done");
+    el.addEventListener("click", () => handleMatch(card, el));
+    grid.appendChild(el);
+  });
+  updateMatchScore();
+}
+function handleMatch(card, el){
+  if(matchState.done.has(card.pair)) return;
+  if(!matchState.first){
+    matchState.first = {card, el};
+    el.classList.add("active");
+    return;
+  }
+  const first = matchState.first;
+  if(first.el === el) return;
+  const ok = first.card.pair === card.pair && first.card.type !== card.type;
+  if(ok){
+    matchState.done.add(card.pair);
+    first.el.classList.remove("active");
+    first.el.classList.add("done");
+    el.classList.add("done");
+    playAnimalSound("dog");
+  } else {
+    first.el.classList.remove("active");
+  }
+  matchState.first = null;
+  const cards = [];
+  matchState.pairs.forEach(([parent,baby], idx) => {
+    cards.push({type:"parent", pair: idx, text: parent});
+    cards.push({type:"baby", pair: idx, text: baby});
+  });
+  renderMatchGrid(cards);
+}
+function updateMatchScore(){
+  document.getElementById("matchScore").textContent = `${matchState.done.size} / ${matchState.pairs ? matchState.pairs.length : 5} matches`;
+}
+document.getElementById("resetMatchBtn").addEventListener("click", initMatchGame);
+
 renderButtons();
 render();
 restartTimer();
+initDrawCanvas();
+initColorCanvas();
+renderSoundGrid();
+initMatchGame();
 </script>
 </body>
 </html>
