@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toddler Animal Slideshow</title>
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#fff; --line:#e5e7eb; --text:#1f2937; --muted:#6b7280;
+      --shadow:0 14px 40px rgba(15,23,42,.08); --radius:24px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#fff,#f6f8fb);color:var(--text)}
+    .app{max-width:1100px;margin:0 auto;padding:16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .header{padding:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+    h1{margin:0;font-size:clamp(28px,4vw,40px)}
+    .sub{margin-top:8px;color:var(--muted);font-size:17px}
+    .controls,.nav{display:flex;gap:10px;flex-wrap:wrap}
+    button{border:1px solid var(--line);background:#f8fafc;border-radius:18px;padding:12px 16px;font-size:16px;font-weight:700;cursor:pointer}
+    .layout{display:grid;grid-template-columns:300px 1fr;gap:16px;margin-top:16px}
+    .sidebar{padding:16px}
+    .sidebar h2{margin:0 0 12px 0;font-size:22px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .chip{padding:14px;border-radius:18px;text-align:left;min-height:82px}
+    .chip.active{background:#111827;color:#fff;border-color:#111827}
+    .emoji{font-size:28px}
+    .name{margin-top:8px;font-weight:700}
+    .coming{margin-top:14px;background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:14px}
+    .coming .tiny{font-size:12px;letter-spacing:.08em;font-weight:800;color:var(--muted);text-transform:uppercase}
+    .coming ul{margin:10px 0 0 18px;padding:0}
+    .stage-wrap{padding:12px}
+    .stage{min-height:620px;border-radius:28px;padding:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fdf2f8,#fff7ed,#eff6ff)}
+    .stage-inner{width:min(860px,100%);display:flex;flex-direction:column;align-items:center;gap:16px}
+    .pill{background:rgba(255,255,255,.92);padding:10px 16px;border-radius:999px;font-weight:700;border:1px solid rgba(255,255,255,.7)}
+    .photo-wrap{width:100%;background:rgba(255,255,255,.78);border-radius:26px;padding:14px;border:1px solid rgba(255,255,255,.7);box-shadow:0 14px 30px rgba(15,23,42,.08)}
+    .photo-box{width:100%;aspect-ratio: 4 / 3;border-radius:20px;overflow:hidden;background:#eef2f7;position:relative}
+    .photo-box img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1);transition:transform 2s ease}
+    .photo-box.animate img{transform:scale(1.04)}
+    .loading,.error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:#475569;font-weight:600}
+    .label{max-width:760px;text-align:center;background:rgba(255,255,255,.88);padding:18px 22px;border-radius:24px;border:1px solid rgba(255,255,255,.7)}
+    .label h3{margin:0;font-size:clamp(34px,4vw,44px)}
+    .caption{margin-top:8px;font-size:22px;color:#374151}
+    .facts{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .fact{background:#111827;color:#fff;border-radius:999px;padding:8px 12px;font-size:14px;font-weight:700}
+    .credit{max-width:860px;font-size:12px;line-height:1.4;color:#475569;background:#f8fafc;border:1px solid var(--line);border-radius:16px;padding:12px}
+    .note{margin-top:12px;text-align:center;color:var(--muted);font-size:14px}
+    a{color:#0f766e;text-decoration:none}
+    @media (max-width:900px){.layout{grid-template-columns:1fr}.stage{min-height:540px}}
+    @media (max-width:640px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.chip{padding:12px}.caption{font-size:18px}.stage{min-height:500px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="card header">
+    <div>
+      <h1>Toddler Animal Slideshow</h1>
+      <div class="sub">Hosted photo version. Tap an animal, then use Next or let it auto-play.</div>
+    </div>
+    <div class="controls">
+      <button id="playBtn">Pause</button>
+      <button id="wordsBtn">Hide words</button>
+      <button id="fullBtn">Full screen</button>
+    </div>
+  </section>
+
+  <section class="layout">
+    <aside class="card sidebar">
+      <h2>Choose an animal</h2>
+      <div class="grid" id="animalGrid"></div>
+      <div class="coming">
+        <div class="tiny">Later ideas</div>
+        <ul>
+          <li>Draw your animal</li>
+          <li>Tap-to-color pages</li>
+          <li>Animal sounds</li>
+          <li>Match baby and parent animals</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="card stage-wrap">
+      <div class="stage" id="stage">
+        <div class="stage-inner">
+          <div class="pill" id="counter">Slide 1 of 3</div>
+
+          <div class="photo-wrap">
+            <div class="photo-box" id="photoBox">
+              <div class="loading" id="loading">Loading image…</div>
+              <img id="photo" alt="" />
+              <div class="error" id="error" style="display:none;">This image did not load. Try Next or reload the page.</div>
+            </div>
+          </div>
+
+          <div class="label" id="label">
+            <h3 id="title">Flamingo</h3>
+            <div class="caption" id="caption">Pretty pink flamingo.</div>
+            <div class="facts" id="facts"></div>
+          </div>
+
+          <div class="nav">
+            <button id="prevBtn">Previous</button>
+            <button id="nextBtn">Next</button>
+          </div>
+
+          <div class="credit" id="credit"></div>
+        </div>
+      </div>
+      <div class="note">This version uses hosted Wikimedia Commons images, so it needs internet access.</div>
+    </main>
+  </section>
+</div>
+
+<script>
+const animals = [
+  {
+    id:"flamingo", name:"Flamingo", emoji:"🦩", bg:"linear-gradient(135deg,#ffe7f0,#fff1f2,#fff7ed)",
+    facts:["Pink bird","Long legs","Stands in water"],
+    slides:[
+      {caption:"Pretty pink flamingo.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Flamingos_.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Flamingos_.jpg">File:Flamingos_.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Tall flamingo standing quietly.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Flamingo_(42598362).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Flamingo_(42598362).jpg">File:Flamingo (42598362).jpg</a> — CC BY 3.0'},
+      {caption:"Another flamingo look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/431%20American%20Flamingo.jpg", credit:'Artwork: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:431_American_Flamingo.jpg">File:431 American Flamingo.jpg</a>'}
+    ]
+  },
+  {
+    id:"owl", name:"Owl", emoji:"🦉", bg:"linear-gradient(135deg,#fff4d7,#fffbeb,#fff7ed)",
+    facts:["Big eyes","Soft feathers","Hoot hoot"],
+    slides:[
+      {caption:"Wide-eyed owl.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/OWl.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:OWl.jpg">File:OWl.jpg</a>'},
+      {caption:"Burrowing owl looking curious.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Burrowing%20Owl%204354.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Burrowing_Owl_4354.jpg">File:Burrowing Owl 4354.jpg</a>'},
+      {caption:"Owl resting calmly.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/OWl.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:OWl.jpg">File:OWl.jpg</a>'}
+    ]
+  },
+  {
+    id:"dolphin", name:"Dolphin", emoji:"🐬", bg:"linear-gradient(135deg,#e0f7ff,#ecfeff,#eff6ff)",
+    facts:["Swims fast","Loves the sea","Clicks and whistles"],
+    slides:[
+      {caption:"Happy dolphins in the sea.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dolphins%20300.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dolphins_300.jpg">File:Dolphins 300.jpg</a>'},
+      {caption:"Bottlenose dolphin with young.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Bottlenose%20dolphin%20with%20young.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Bottlenose_dolphin_with_young.JPG">File:Bottlenose dolphin with young.JPG</a>'},
+      {caption:"Common dolphin look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Common%20dolphin%20noaa.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Common_dolphin_noaa.jpg">File:Common dolphin noaa.jpg</a>'}
+    ]
+  },
+  {
+    id:"seahorse", name:"Sea Horse", emoji:"🌊", bg:"linear-gradient(135deg,#ddfbff,#ecfeff,#f0fdfa)",
+    facts:["Tiny swimmer","Curly tail","Lives underwater"],
+    slides:[
+      {caption:"Small sea horse underwater.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Seahorse%20(1).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Seahorse_(1).jpg">File:Seahorse (1).jpg</a> — CC BY-SA 3.0'},
+      {caption:"Curly-tailed sea horse.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Sea%20Horse%20(4564152689).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Sea_Horse_(4564152689).jpg">File:Sea Horse (4564152689).jpg</a> — CC BY 2.0'},
+      {caption:"Another sea horse view.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Seahorse%20(9052915447).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Seahorse_(9052915447).jpg">File:Seahorse (9052915447).jpg</a> — CC BY 2.0'}
+    ]
+  },
+  {
+    id:"giraffe", name:"Giraffe", emoji:"🦒", bg:"linear-gradient(135deg,#fff7d4,#fffbeb,#fff7ed)",
+    facts:["Very tall","Long neck","Spotty body"],
+    slides:[
+      {caption:"Tall giraffe.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Giraffe.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Giraffe.JPG">File:Giraffe.JPG</a>'},
+      {caption:"Full-length giraffe.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/GIRAFFE%20FULL%20LENGTH.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:GIRAFFE_FULL_LENGTH.jpg">File:GIRAFFE FULL LENGTH.jpg</a>'},
+      {caption:"Giraffe looking around.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Giraffe.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Giraffe.JPG">File:Giraffe.JPG</a>'}
+    ]
+  },
+  {
+    id:"tiger", name:"Tiger", emoji:"🐯", bg:"linear-gradient(135deg,#fff1da,#fff7ed,#fefce8)",
+    facts:["Orange stripes","Big cat","Strong paws"],
+    slides:[
+      {caption:"Calm tiger.", image:"https://upload.wikimedia.org/wikipedia/commons/5/56/Tiger.50.jpg", credit:'Photo: Wikimedia Commons tiger image'},
+      {caption:"Tiger face close-up.", image:"https://upload.wikimedia.org/wikipedia/commons/2/2d/Tigerramki.jpg", credit:'Photo: Wikimedia Commons tiger image'},
+      {caption:"Resting tiger.", image:"https://upload.wikimedia.org/wikipedia/commons/b/b9/P.t.altaica_Tomak_Male.jpg", credit:'Photo: Wikimedia Commons tiger image'}
+    ]
+  },
+  {
+    id:"peacock", name:"Peacock", emoji:"🦚", bg:"linear-gradient(135deg,#e8fff8,#f0fdfa,#ecfeff)",
+    facts:["Fancy feathers","Bright colors","Big tail"],
+    slides:[
+      {caption:"Colorful peacock.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock.JPG", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock.JPG">File:Peacock.JPG</a>'},
+      {caption:"Peacock profile.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock%20profile.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock_profile.jpg">File:Peacock profile.jpg</a> — CC BY-SA 4.0'},
+      {caption:"Peacock again.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Peacock%20(6964635758).jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Peacock_(6964635758).jpg">File:Peacock (6964635758).jpg</a> — CC BY 2.0'}
+    ]
+  },
+  {
+    id:"kitty", name:"Kitty", emoji:"🐱", bg:"linear-gradient(135deg,#ffeaf2,#fdf2f8,#fdf4ff)",
+    facts:["Soft paws","Meow meow","Loves naps"],
+    slides:[
+      {caption:"Sweet kitty.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/A-Cat.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:A-Cat.jpg">File:A-Cat.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Another calm cat.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/A%20Cat.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:A_Cat.jpg">File:A Cat.jpg</a> — CC BY-SA 4.0'},
+      {caption:"Kitty in the snow.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Felis%20catus-cat%20on%20snow.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Felis_catus-cat_on_snow.jpg">File:Felis catus-cat on snow.jpg</a>'}
+    ]
+  },
+  {
+    id:"dog", name:"Dog", emoji:"🐶", bg:"linear-gradient(135deg,#efffeb,#f0fdf4,#ecfdf5)",
+    facts:["Waggy tail","Woof woof","Loves to play"],
+    slides:[
+      {caption:"Friendly dog.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dogs.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dogs.jpg">File:Dogs.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Another sweet dog.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/My%20dog.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:My_dog.jpg">File:My dog.jpg</a> — CC BY-SA 3.0'},
+      {caption:"Cute pup look.", image:"https://commons.wikimedia.org/wiki/Special:FilePath/Dog-2016-11-a.jpg", credit:'Photo: <a target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:Dog-2016-11-a.jpg">File:Dog-2016-11-a.jpg</a> — CC BY-SA 3.0'}
+    ]
+  }
+];
+
+let selectedAnimalId = "flamingo";
+let slideIndex = 0;
+let isPlaying = true;
+let showWords = true;
+let timer = null;
+
+const animalGrid = document.getElementById("animalGrid");
+const stage = document.getElementById("stage");
+const photo = document.getElementById("photo");
+const photoBox = document.getElementById("photoBox");
+const loading = document.getElementById("loading");
+const errorEl = document.getElementById("error");
+const label = document.getElementById("label");
+const titleEl = document.getElementById("title");
+const captionEl = document.getElementById("caption");
+const factsEl = document.getElementById("facts");
+const counterEl = document.getElementById("counter");
+const creditEl = document.getElementById("credit");
+const playBtn = document.getElementById("playBtn");
+const wordsBtn = document.getElementById("wordsBtn");
+
+function currentAnimal(){ return animals.find(a => a.id === selectedAnimalId) || animals[0]; }
+
+function renderButtons(){
+  animalGrid.innerHTML = "";
+  animals.forEach(animal => {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (animal.id === selectedAnimalId ? " active" : "");
+    btn.innerHTML = '<div class="emoji">'+animal.emoji+'</div><div class="name">'+animal.name+'</div>';
+    btn.addEventListener("click", () => {
+      selectedAnimalId = animal.id;
+      slideIndex = 0;
+      renderButtons();
+      render();
+      restartTimer();
+    });
+    animalGrid.appendChild(btn);
+  });
+}
+
+function renderFacts(items){
+  factsEl.innerHTML = "";
+  items.forEach(item => {
+    const span = document.createElement("span");
+    span.className = "fact";
+    span.textContent = item;
+    factsEl.appendChild(span);
+  });
+}
+
+function render(){
+  const animal = currentAnimal();
+  const slide = animal.slides[slideIndex];
+  stage.style.background = animal.bg;
+  counterEl.textContent = `Slide ${slideIndex + 1} of ${animal.slides.length}`;
+  titleEl.textContent = animal.name;
+  captionEl.textContent = slide.caption;
+  renderFacts(animal.facts);
+  label.style.display = showWords ? "block" : "none";
+  playBtn.textContent = isPlaying ? "Pause" : "Play";
+  wordsBtn.textContent = showWords ? "Hide words" : "Show words";
+  creditEl.innerHTML = slide.credit + " · Keep this credit if you publish the app.";
+  loading.style.display = "flex";
+  errorEl.style.display = "none";
+  photo.style.display = "none";
+  photo.alt = animal.name;
+  photoBox.classList.remove("animate");
+  photo.onload = () => {
+    loading.style.display = "none";
+    errorEl.style.display = "none";
+    photo.style.display = "block";
+    requestAnimationFrame(() => photoBox.classList.add("animate"));
+  };
+  photo.onerror = () => {
+    loading.style.display = "none";
+    errorEl.style.display = "flex";
+    photo.style.display = "none";
+  };
+  photo.src = slide.image;
+}
+
+function nextSlide(){
+  const animal = currentAnimal();
+  slideIndex = (slideIndex + 1) % animal.slides.length;
+  render();
+}
+function prevSlide(){
+  const animal = currentAnimal();
+  slideIndex = (slideIndex - 1 + animal.slides.length) % animal.slides.length;
+  render();
+}
+function restartTimer(){
+  if (timer) clearInterval(timer);
+  if (isPlaying) timer = setInterval(nextSlide, 2600);
+}
+
+document.getElementById("prevBtn").addEventListener("click", () => { prevSlide(); restartTimer(); });
+document.getElementById("nextBtn").addEventListener("click", () => { nextSlide(); restartTimer(); });
+playBtn.addEventListener("click", () => { isPlaying = !isPlaying; render(); restartTimer(); });
+wordsBtn.addEventListener("click", () => { showWords = !showWords; render(); });
+document.getElementById("fullBtn").addEventListener("click", async () => {
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch (e) {}
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") { nextSlide(); restartTimer(); }
+  else if (e.key === "ArrowLeft") { prevSlide(); restartTimer(); }
+  else if (e.key === " ") { e.preventDefault(); isPlaying = !isPlaying; render(); restartTimer(); }
+});
+
+renderButtons();
+render();
+restartTimer();
+</script>
+</body>
+</html>
